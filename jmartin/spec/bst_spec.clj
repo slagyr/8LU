@@ -74,6 +74,20 @@
       (should= true (contains? tree "two"))
       (should= false (contains? tree "foo"))))
 
-  )
+  (it "hadles large shuffled entries"
+    (should= (range 100) (apply bst (shuffle (range 100))))
+;    (should= (range 1000) (apply bst (shuffle (range 1000))))
+    )
+
+  (it "deletes stuff out of the middle of a larger tree"
+    (let [source (range 50)]
+      (loop [tree (apply bst (shuffle source)) deletes (shuffle source) model source]
+        (when (seq model)
+          (let [rotten-leaf (first deletes)
+                pruned-tree (bst-remove tree rotten-leaf)
+                pruned-model (remove #(= rotten-leaf %) model)]
+            (should= pruned-model pruned-tree)
+            (recur pruned-tree (rest deletes) pruned-model))))))
+)
 
 (run-specs)
