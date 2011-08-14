@@ -31,9 +31,9 @@
   (more [this] (delete-node this (first this)))
 
   IPersistentSet
-	(disjoin [this key] (bst-remove this key))
-	(contains [this key] (bst-contains? this key))
-	(get [this key] (if (contains? this key) key nil))
+  (disjoin [this key] (bst-remove this key))
+  (contains [this key] (bst-contains? this key))
+  (get [this key] (if (contains? this key) key nil))
   )
 
 (defn p [node]
@@ -42,11 +42,10 @@
 
 (def empty-bst (BST. nil nil nil))
 
-(defn bst-add [tree val]
-  (cond
-    (or (nil? tree) (nil? (.value tree))) (BST. val nil nil)
-    (> 0 (compare val (.value tree))) (BST. (.value tree) (bst-add (.left tree) val) (.right tree))
-    :else (BST. (.value tree) (.left tree) (bst-add (.right tree) val))))
+(defn bst-height [tree]
+  (if (empty? tree)
+    0
+    (+ 1 (max (bst-height (.left tree)) (bst-height (.right tree))))))
 
 (defn- count-nodes [tree]
   (if (and tree (.value tree))
@@ -99,6 +98,31 @@
     (if (.left tree)
       (BST. (.value (.left tree)) (.left (.left tree)) (add-left-leaf (.right tree) (.right (.left tree))))
       (or (.right tree) empty-bst))))
+
+(defn jiggle-left-child [tree]
+  (let [left-child (.left tree)]
+    (BST. (.value left-child)
+      (.left left-child)
+      (add-left-leaf (BST. (.value tree) nil (.right tree)) (.right left-child)))))
+
+(defn jiggle-right-child [tree]
+  (let [right-child (.right tree)]
+    (BST. (.value right-child)
+      (add-right-leaf (BST. (.value tree) (.left tree) nil) (.left right-child))
+      (.right right-child))))
+
+(defn- balance [tree]
+  (if (= 2 (- (bst-height (.left tree)) (bst-height (.right tree))))
+    (jiggle-left-child tree)
+    (if (= 2 (- (bst-height (.right tree)) (bst-height (.left tree))))
+      (jiggle-right-child tree)
+      tree)))
+
+(defn bst-add [tree val]
+  (cond
+    (or (nil? tree) (nil? (.value tree))) (BST. val nil nil)
+    (> 0 (compare val (.value tree))) (balance (BST. (.value tree) (bst-add (.left tree) val) (.right tree)))
+    :else (balance (BST. (.value tree) (.left tree) (bst-add (.right tree) val)))))
 
 (defn bst-contains? [tree val]
   (cond

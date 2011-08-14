@@ -1,7 +1,9 @@
 (ns bst-spec
   (:use
     [speclj.core]
-    [bst]))
+    [bst])
+  (:import
+    [bst BST]))
 
 (describe "Binary Search Tree"
 
@@ -88,6 +90,31 @@
                 pruned-model (remove #(= rotten-leaf %) model)]
             (should= pruned-model pruned-tree)
             (recur pruned-tree (rest deletes) pruned-model))))))
+
+  (it "balances a simple outside inbalance on the left"
+    (let [tree (bst 3 2 1)]
+      (should= 2 (.value tree))
+      (should= 1 (.value (.left tree)))
+      (should= 3 (.value (.right tree)))))
+
+(it "balances a simple outside inbalance on the right"
+    (let [tree (bst 1 2 3)]
+      (should= 2 (.value tree))
+      (should= 1 (.value (.left tree)))
+      (should= 3 (.value (.right tree)))))
+
+
+  (it "can calculate height of a tree"
+    (should= 0 (bst-height (bst)))
+    (should= 1 (bst-height (bst 1)))
+    (should= 2 (bst-height (bst 2 1)))
+    (should= 2 (bst-height (bst 2 1 3))))
+
+  (it "can jiggle left child"
+    (let [tree (jiggle-left-child (BST. 3 (BST. 2 (BST. 1 nil nil) nil) nil))]
+      (should= 2 (.value tree))
+      (should= 1 (.value (.left tree)))
+      (should= 3 (.value (.right tree)))))
 )
 
 (run-specs)
