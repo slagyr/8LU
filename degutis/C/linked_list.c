@@ -30,7 +30,7 @@ void free_node_list(node* n) {
 	walk_nodes(free, n);
 }
 
-node* last(node* n)
+node* tail(node* n)
 {
   while(n->next)
     n = n->next;
@@ -39,8 +39,7 @@ node* last(node* n)
 
 void append_node(node* head, node* new_tail)
 {
-  node* tail = last(head);
-  tail->next = new_tail;
+  tail(head)->next = new_tail;
 }
 
 // test-level stuff
